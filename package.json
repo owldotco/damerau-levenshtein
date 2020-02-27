@@ -4,12 +4,25 @@
   "description": "An N-API/C++ port of the Damerau-Levenshtein implementation from natural",
   "main": "damerau-levenshtein.native.js",
   "browser": "damerau-levenshtein.natural.js",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.com"
+  },
+  "engines": {
+    "node": ">=12.15.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@gitlab.dev.owl.co:owl_v2/owl-backend/owl2-env.git"
+  },
+  "homepage": "https://github.com/haggholm/damerau-levenshtein",
   "scripts": {
+    "build": "node-gyp-build",
     "clean": "trash build/** prebuilds/**",
     "install": "node-gyp-build",
-    "build": "node-gyp-build",
     "prebuild": "prebuildify --napi",
-    "prepublishOnly": "run-s build prebuild",
+    "preversion": "run-s test",
+    "prepublishOnly": "run-s build prebuild test",
     "test": "jest"
   },
   "dependencies": {
