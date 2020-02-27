@@ -1,6 +1,6 @@
 #include <algorithm>
 #include <cstddef>
-#include <map>
+#include <unordered_map>
 #include <memory>
 #include <string>
 #include <vector>
@@ -10,7 +10,7 @@
 
 using namespace std;
 
-// #define USE_UTF16 true
+#define USE_UTF16 true
 #ifdef USE_UTF16
 typedef char16_t CharType;
 #else
@@ -20,37 +20,32 @@ typedef basic_string<CharType> String;
 
 struct Options
 {
-    double insertion_cost = 1;
-    double deletion_cost = 1;
-    double substitution_cost = 1;
-    double transposition_cost = 1;
+    float insertion_cost = 1;
+    float deletion_cost = 1;
+    float substitution_cost = 1;
+    float transposition_cost = 1;
     bool search = true;
     bool restricted = false;
     bool damerau = true;
 };
 
-struct DistanceEntry
-{
-    double cost = 0;
-};
-
 struct Coordinates
 {
-    size_t row;
-    size_t column;
+    int row;
+    int column;
 };
 
 struct CoordinateMatrixEntry
 {
-    double cost = 0;
-    shared_ptr<Coordinates> coordinates = shared_ptr<Coordinates>(0);
-    shared_ptr<Coordinates> parentCell = shared_ptr<Coordinates>(0);
+    float cost = 0;
+    Coordinates coordinates = Coordinates({0, 0});
+    Coordinates parentCell = Coordinates({0, 0});
 };
 
 struct MinCostSubstringStruct
 {
     String substring;
-    double distance;
+    float distance;
 };
 
 int _getMatchStart(
@@ -72,8 +67,8 @@ int _getMatchStart(
     {
         tmpRow = row;
         tmpColumn = column;
-        row = distanceMatrix[tmpRow][tmpColumn].parentCell->row;
-        column = distanceMatrix[tmpRow][tmpColumn].parentCell->column;
+        row = distanceMatrix[tmpRow][tmpColumn].parentCell.row;
+        column = distanceMatrix[tmpRow][tmpColumn].parentCell.column;
     }
 
     return column - 1;
@@ -94,7 +89,7 @@ MinCostSubstringStruct getMinCostSubstring(
 {
     size_t sourceLength = source.length();
     size_t targetLength = target.length();
-    double minDistance = sourceLength + targetLength;
+    float minDistance = sourceLength + targetLength;
     int matchEnd = targetLength;
     for (size_t column = 0; column <= targetLength; column++)
     {
@@ -109,41 +104,30 @@ MinCostSubstringStruct getMinCostSubstring(
     return {target.substr(matchStart, matchEnd), minDistance};
 }
 
-inline shared_ptr<Coordinates> nullCoords()
+inline Coordinates nullCoords()
 {
-    return shared_ptr<Coordinates>(0);
+    return {0, 0};
 }
 
-inline shared_ptr<Coordinates> coordPtr(size_t row, size_t column)
-{
-    return shared_ptr<Coordinates>(new Coordinates({row, column}));
-}
-
-inline shared_ptr<CoordinateMatrixEntry> nullEntry()
-{
-    return shared_ptr<CoordinateMatrixEntry>(0);
-}
-
-double levenshteinDistance(
+float levenshteinDistance(
     const String &source,
     const String &target,
     const Options &options)
 {
     bool isUnrestrictedDamerau = options.damerau && !options.restricted;
     bool isRestrictedDamerau = options.damerau && options.restricted;
-    map<CharType, size_t> lastRowMap;
+    unordered_map<CharType, size_t> lastRowMap(256);
 
     auto sourceLength = source.length();
     auto targetLength = target.length();
 
     vector<vector<CoordinateMatrixEntry>> distanceMatrix(
         sourceLength + 1,
-        vector<CoordinateMatrixEntry>(targetLength + 1, CoordinateMatrixEntry({0, nullCoords(), nullCoords()})));
+        vector<CoordinateMatrixEntry>(targetLength + 1));
 
     for (size_t row = 1; row <= sourceLength; row++)
     {
-        distanceMatrix[row][0] = CoordinateMatrixEntry({distanceMatrix[row - 1][0].cost + options.deletion_cost, nullCoords(),
-                                                        coordPtr(row - 1, 0)});
+        distanceMatrix[row][0] = CoordinateMatrixEntry({distanceMatrix[row - 1][0].cost + options.deletion_cost, nullCoords(), {row - 1, 0}});
     }
 
     for (size_t column = 1; column <= targetLength; column++)
@@ -157,7 +141,7 @@ double levenshteinDistance(
             distanceMatrix[0][column] = {
                 distanceMatrix[0][column - 1].cost + options.insertion_cost,
                 nullCoords(),
-                coordPtr(0, column - 1)};
+                {0, column - 1}};
         }
     }
 
@@ -179,9 +163,9 @@ double levenshteinDistance(
                 costToSubstitute = costToSubstitute + options.substitution_cost;
             }
 
-            vector<CoordinateMatrixEntry> possibleParents({CoordinateMatrixEntry({costToInsert, coordPtr(row, column - 1), nullCoords()}),
-                                                           CoordinateMatrixEntry({costToDelete, coordPtr(row - 1, column), nullCoords()}),
-                                                           CoordinateMatrixEntry({costToSubstitute, coordPtr(row - 1, column - 1), nullCoords()})});
+            vector<CoordinateMatrixEntry> possibleParents({CoordinateMatrixEntry({costToInsert, {row, column - 1}}),
+                                                           CoordinateMatrixEntry({costToDelete, {row - 1, column}}),
+                                                           CoordinateMatrixEntry({costToSubstitute, {row - 1, column - 1}})});
 
             // We can add damerau to the possibleParents if the current
             // target-letter has been encountered in our lastRowMap,
@@ -200,8 +184,7 @@ double levenshteinDistance(
                     distanceMatrix[lastRowMatch - 1][lastColMatch - 1].cost;
                 float costToTranspose = costBeforeTransposition + ((row - lastRowMatch - 1) * options.deletion_cost) + ((column - lastColMatch - 1) * options.insertion_cost) + options.transposition_cost;
                 possibleParents.push_back({costToTranspose,
-                                           coordPtr(lastRowMatch - 1, lastColMatch - 1),
-                                           nullCoords()});
+                                           {lastRowMatch - 1, lastColMatch - 1}});
             }
             // Source and target chars are 1-indexed in the distanceMatrix so previous
             // source/target element is (col/row - 2)
@@ -211,7 +194,7 @@ double levenshteinDistance(
             {
                 float costBeforeTransposition = distanceMatrix[row - 2][column - 2].cost;
                 possibleParents.push_back({costBeforeTransposition + options.transposition_cost,
-                                           coordPtr(row - 2, column - 2),
+                                           {row - 2, column - 2},
                                            nullCoords()});
             }
 
@@ -240,6 +223,27 @@ double levenshteinDistance(
     return getMinCostSubstring(distanceMatrix, source, target).distance;
 }
 
+String extractString(napi_env env, napi_value argv[], int idx)
+{
+    int bufLen = 4096;
+    CharType buf[bufLen];
+    size_t buf_len;
+
+#ifdef USE_UTF16
+    auto status = napi_get_value_string_utf16(env, argv[idx], (CharType *)&buf, bufLen, &buf_len);
+#else
+    auto napi_get_value_string_utf8(env, argv[idx], (CharType *)&buf, 1024, &buf_len);
+#endif
+    if (status != napi_ok)
+    {
+        napi_throw_error(env, "EINVAL", "Expected string");
+        return NULL;
+    }
+    // TODO Compare buf_len/bufLen to see if we're overflowing
+
+    return String(buf);
+}
+
 napi_value wrapper(napi_env env, napi_callback_info info)
 {
     napi_value argv[3];
@@ -252,44 +256,13 @@ napi_value wrapper(napi_env env, napi_callback_info info)
         return NULL;
     }
 
-#ifdef USE_UTF16
-    char16_t source[1024];
-    size_t source_len;
-    if (napi_get_value_string_utf16(env, argv[0], (char16_t *)&source, 1024, &source_len) != napi_ok)
-    {
-        napi_throw_error(env, "EINVAL", "Expected string");
-        return NULL;
-    }
-
-    char16_t target[1024];
-    size_t target_len;
-    if (napi_get_value_string_utf16(env, argv[1], (char16_t *)&target, 1024, &target_len) != napi_ok)
-    {
-        napi_throw_error(env, "EINVAL", "Expected string");
-        return NULL;
-    }
-#else
-    char source[1024];
-    size_t source_len;
-    if (napi_get_value_string_utf8(env, argv[0], (char *)&source, 1024, &source_len) != napi_ok)
-    {
-        napi_throw_error(env, "EINVAL", "Expected string");
-        return NULL;
-    }
-
-    char target[1024];
-    size_t target_len;
-    if (napi_get_value_string_utf8(env, argv[1], (char *)&target, 1024, &target_len) != napi_ok)
-    {
-        napi_throw_error(env, "EINVAL", "Expected string");
-        return NULL;
-    }
-#endif
-
     Options options;
 
     napi_value returnValue;
-    napi_status status = napi_create_double(env, levenshteinDistance(source, target, options), &returnValue);
+    String source = extractString(env, argv, 0);
+    String target = extractString(env, argv, 1);
+    napi_status status = napi_create_double(env, levenshteinDistance(source, target, options),
+                                            &returnValue);
     if (status != napi_ok)
         return NULL;
     return returnValue;

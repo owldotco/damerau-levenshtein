@@ -3,7 +3,7 @@ const { LevenshteinDistance } = require('natural');
 const native = require('../index');
 
 const testStringPairs = [];
-for (let i = 0; i < 1000; i++) {
+for (let i = 0; i < 2000; i++) {
   testStringPairs.push([JSC.string(50, 100)(), JSC.string(5, 10)()]);
 }
 
@@ -20,7 +20,7 @@ describe('natural.LevenshteinDistance', () => {
       );
     }
     naturalTime = Date.now() - t0;
-  });
+  }, 30 * 1000);
 });
 
 describe('n-api LevenshteinDistance', () => {
