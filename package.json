@@ -13,12 +13,11 @@
     "test": "jest"
   },
   "dependencies": {
-    "@types/node": "^12",
     "node-gyp-build": "^4.2.0",
-    "trash-cli": "^3.0.0",
     "underscore": "^1.9.2"
   },
   "devDependencies": {
+    "@types/node": "^12",
     "@types/prettier": "^1.19.0",
     "jest": "^25.1.0",
     "jscheck": "^0.2.0",
@@ -26,7 +25,7 @@
     "npm-run-all": "^4.1.5",
     "prebuildify": "^3.0.4",
     "prettier": "^1.19.1",
-    "typescript": "^3.8.2"
+    "trash-cli": "^3.0.0"
   },
   "keywords": [
     "Damerau-Levenshtein",
