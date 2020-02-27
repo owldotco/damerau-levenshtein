@@ -223,16 +223,17 @@ float levenshteinDistance(
     return getMinCostSubstring(distanceMatrix, source, target).distance;
 }
 
-String extractString(napi_env env, napi_value argv[], int idx)
+#define EXTRACT_STRING_BUF_LEN (1024 * 8)
+
+String extractString(napi_env env, napi_value arg)
 {
-    int bufLen = 4096;
-    CharType buf[bufLen];
+    CharType buf[EXTRACT_STRING_BUF_LEN];
     size_t buf_len;
 
 #ifdef USE_UTF16
-    auto status = napi_get_value_string_utf16(env, argv[idx], (CharType *)&buf, bufLen, &buf_len);
+    auto status = napi_get_value_string_utf16(env, arg, (CharType *)&buf, EXTRACT_STRING_BUF_LEN, &buf_len);
 #else
-    auto napi_get_value_string_utf8(env, argv[idx], (CharType *)&buf, 1024, &buf_len);
+    auto napi_get_value_string_utf8(env, arg, (CharType *)&buf, 1024, &buf_len);
 #endif
     if (status != napi_ok)
     {
@@ -259,8 +260,8 @@ napi_value wrapper(napi_env env, napi_callback_info info)
     Options options;
 
     napi_value returnValue;
-    String source = extractString(env, argv, 0);
-    String target = extractString(env, argv, 1);
+    String source = extractString(env, argv[0]);
+    String target = extractString(env, argv[1]);
     napi_status status = napi_create_double(env, levenshteinDistance(source, target, options),
                                             &returnValue);
     if (status != napi_ok)
