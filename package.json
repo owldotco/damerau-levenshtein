@@ -1,0 +1,35 @@
+{
+  "name": "@haggholm/damerau-levenshtein",
+  "version": "1.0.0",
+  "description": "An N-API/C++ port of the Damerau-Levenshtein implementation from natural",
+  "main": "index.js",
+  "scripts": {
+    "clean": "trash build/** prebuilds/**",
+    "install": "node-gyp-build",
+    "build": "node-gyp-build",
+    "prepare": "run-s clean build",
+    "prebuild": "prebuildify --napi",
+    "test": "jest"
+  },
+  "dependencies": {
+    "@types/node": "^12",
+    "node-gyp-build": "^4.2.0",
+    "trash-cli": "^3.0.0"
+  },
+  "devDependencies": {
+    "@types/natural": "^0.6.3",
+    "@types/prettier": "^1.19.0",
+    "jest": "^25.1.0",
+    "jscheck": "^0.2.0",
+    "natural": "^0.6.3",
+    "node-addon-api": "^2.0.0",
+    "npm-run-all": "^4.1.5",
+    "prebuildify": "^3.0.4",
+    "prettier": "^1.19.1",
+    "tslint": "^6.0.0",
+    "typescript": "^3.8.2"
+  },
+  "keywords": ["Damerau-Levenshtein", "Levenshtein", "string distance"],
+  "author": "Petter Häggholm <petter@petterhaggholm.net>",
+  "license": "ISC"
+}
