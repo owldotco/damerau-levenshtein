@@ -1,6 +1,6 @@
 {
   "name": "@haggholm/damerau-levenshtein",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "An N-API/C++ port of the Damerau-Levenshtein implementation from natural",
   "main": "damerau-levenshtein.native.js",
   "browser": "damerau-levenshtein.natural.js",
