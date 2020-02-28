@@ -45,14 +45,6 @@ afterAll(() => {
   let totalFactors = 0;
   for (const f of speedupFactors) totalFactors += f;
 
-  console.log({
-    totalFactors,
-    'speedupFactors.length': speedupFactors.length,
-    totalNaturalTime,
-    totalNapiTime,
-    totalSamples,
-  });
-
   console.log(
     'Mean speedup factor:',
     (totalFactors / speedupFactors.length).toFixed(1)
@@ -79,7 +71,7 @@ for (const options of opts) {
 
     let naturalTime;
     const naturalDistances = [];
-    const nApiDistances = [];
+    const nativeDistances = [];
 
     it(
       'should generate distances with natural',
@@ -109,14 +101,16 @@ for (const options of opts) {
         const t0 = Date.now();
         for (let i = 0, len = naturalDistances.length; i < len; i++) {
           const [src, target] = testStringPairs[i];
-          nApiDistances.push(native.LevenshteinDistance(src, target, options));
+          nativeDistances.push(
+            native.LevenshteinDistance(src, target, options)
+          );
         }
         nApiTime = Date.now() - t0;
         totalNapiTime += nApiTime;
 
         for (let i = 0, len = naturalDistances.length; i < len; i++) {
           const expected = naturalDistances[i];
-          const actual = nApiDistances[i];
+          const actual = nativeDistances[i];
           try {
             expect(expected).toEqual(actual);
           } catch (err) {

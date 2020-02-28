@@ -1,5 +1,4 @@
 #include <algorithm>
-#include <cstddef>
 #include <unordered_map>
 #include <memory>
 #include <string>
@@ -10,21 +9,26 @@
 
 using namespace std;
 
-#define MAX_STRING_BUF_BYTES (16 * 1024 * 1024)
-
 #define USE_UTF16 true
+#define USE_STATIC_BUFFER false
 
-#ifdef USE_UTF16
-typedef char16_t CharType;
+#if USE_UTF16
+typedef char16_t _char_type;
+typedef u16string _string;
 #define _napi_get_value_string napi_get_value_string_utf16
 #define _napi_create_string napi_create_string_utf16
 #else
-typedef char CharType;
+typedef char _char_type;
+typedef string _string;
 #define _napi_get_value_string napi_get_value_string_utf8
 #define _napi_create_string napi_create_string_utf8
 #endif
 
-typedef basic_string<CharType> String;
+#if USE_STATIC_BUFFER
+#define MAX_STRING_BUF_LEN (1 * 1024 * 1024 / sizeof(_char_type))
+#else
+#define MAX_STRING_BUF_LEN (8 * 1024 * 1024 / sizeof(_char_type))
+#endif
 
 struct Options
 {
@@ -39,8 +43,8 @@ struct Options
 
 struct Coordinates
 {
-    int row;
-    int column;
+    int row = 0;
+    int column = 0;
 };
 
 struct CoordinateMatrixEntry
@@ -53,7 +57,7 @@ struct CoordinateMatrixEntry
 struct MinCostSubstringStruct
 {
     double distance;
-    String substring;
+    _string substring;
 };
 
 int _getMatchStart(
@@ -84,7 +88,7 @@ int _getMatchStart(
 
 struct MatrixEntryComparator
 {
-    bool operator()(const CoordinateMatrixEntry &a, const CoordinateMatrixEntry &b) const
+    inline bool operator()(const CoordinateMatrixEntry &a, const CoordinateMatrixEntry &b) const
     {
         return a.cost < b.cost;
     }
@@ -92,8 +96,8 @@ struct MatrixEntryComparator
 
 MinCostSubstringStruct getMinCostSubstring(
     const vector<vector<CoordinateMatrixEntry>> &distanceMatrix,
-    const String &source,
-    const String &target)
+    const _string &source,
+    const _string &target)
 {
     size_t sourceLength = source.length();
     size_t targetLength = target.length();
@@ -109,22 +113,17 @@ MinCostSubstringStruct getMinCostSubstring(
     }
 
     int matchStart = _getMatchStart(distanceMatrix, matchEnd, sourceLength);
-    return {minDistance, target.substr(matchStart, matchEnd)};
-}
-
-inline Coordinates nullCoords()
-{
-    return {0, 0};
+    return {minDistance, target.substr(matchStart, matchEnd - matchStart)};
 }
 
 MinCostSubstringStruct levenshteinDistance(
-    const String &source,
-    const String &target,
+    const _string &source,
+    const _string &target,
     const Options &options)
 {
     bool isUnrestrictedDamerau = options.damerau && !options.restricted;
     bool isRestrictedDamerau = options.damerau && options.restricted;
-    unordered_map<CharType, size_t> lastRowMap(256);
+    unordered_map<_char_type, size_t> lastRowMap(512);
 
     auto sourceLength = source.length();
     auto targetLength = target.length();
@@ -135,20 +134,20 @@ MinCostSubstringStruct levenshteinDistance(
 
     for (size_t row = 1; row <= sourceLength; row++)
     {
-        distanceMatrix[row][0] = CoordinateMatrixEntry({distanceMatrix[row - 1][0].cost + options.deletion_cost, nullCoords(), {row - 1, 0}});
+        distanceMatrix[row][0] = CoordinateMatrixEntry({distanceMatrix[row - 1][0].cost + options.deletion_cost, Coordinates(), {row - 1, 0}});
     }
 
     for (size_t column = 1; column <= targetLength; column++)
     {
         if (options.search)
         {
-            distanceMatrix[0][column] = CoordinateMatrixEntry({0, nullCoords(), nullCoords()});
+            distanceMatrix[0][column] = CoordinateMatrixEntry({0, Coordinates(), Coordinates()});
         }
         else
         {
             distanceMatrix[0][column] = {
                 distanceMatrix[0][column - 1].cost + options.insertion_cost,
-                nullCoords(),
+                Coordinates(),
                 {0, column - 1}};
         }
     }
@@ -163,8 +162,8 @@ MinCostSubstringStruct levenshteinDistance(
             double costToDelete = distanceMatrix[row - 1][column].cost + options.deletion_cost;
 
             // TODO Unicode?
-            CharType sourceElement = source[row - 1];
-            CharType targetElement = target[column - 1];
+            _char_type sourceElement = source[row - 1];
+            _char_type targetElement = target[column - 1];
             double costToSubstitute = distanceMatrix[row - 1][column - 1].cost;
             if (sourceElement != targetElement)
             {
@@ -203,14 +202,14 @@ MinCostSubstringStruct levenshteinDistance(
                 double costBeforeTransposition = distanceMatrix[row - 2][column - 2].cost;
                 possibleParents.push_back({costBeforeTransposition + options.transposition_cost,
                                            {row - 2, column - 2},
-                                           nullCoords()});
+                                           Coordinates()});
             }
 
             auto minCostParent = min_element(
                 possibleParents.begin(), possibleParents.end(),
                 matrixEntryComparator);
 
-            distanceMatrix[row][column] = CoordinateMatrixEntry({minCostParent->cost, nullCoords(), minCostParent->coordinates});
+            distanceMatrix[row][column] = CoordinateMatrixEntry({minCostParent->cost, Coordinates(), minCostParent->coordinates});
 
             if (isUnrestrictedDamerau)
             {
@@ -229,30 +228,31 @@ MinCostSubstringStruct levenshteinDistance(
     return getMinCostSubstring(distanceMatrix, source, target);
 }
 
-String extractString(napi_env env, napi_value arg)
+napi_status extractString(napi_env env, napi_value arg, _string& str)
 {
-    size_t strLenCodeUnits;
-    if (_napi_get_value_string(env, arg, NULL, MAX_STRING_BUF_BYTES, &strLenCodeUnits) != napi_ok)
-        return NULL;
+    size_t buf_size;
 
-    size_t strLenBytes = strLenCodeUnits * 2;
-    if (strLenBytes > MAX_STRING_BUF_BYTES - 1)
+#if USE_STATIC_BUFFER
+    _char_type buf[MAX_STRING_BUF_LEN];
+    if (_napi_get_value_string(env, arg, buf, MAX_STRING_BUF_LEN, &buf_size) != napi_ok)
+        return napi_invalid_arg;
+    str += _string(buf);
+#else
+    if (_napi_get_value_string(env, arg, NULL, MAX_STRING_BUF_LEN, &buf_size) != napi_ok)
     {
         napi_throw_error(env, "EINVAL", "String is too large");
-        return NULL;
+        return napi_invalid_arg;
     }
-
-    CharType *buf = new CharType[strLenBytes / sizeof(CharType)];
-    if (_napi_get_value_string(env, arg, buf, strLenBytes, &strLenCodeUnits) != napi_ok)
+    shared_ptr<_char_type> buf(new _char_type[buf_size + 1], default_delete<_char_type[]>());
+    if (_napi_get_value_string(env, arg, buf.get(), buf_size + 1, NULL) != napi_ok)
     {
         napi_throw_error(env, "EINVAL", "Expected string");
-        delete buf;
-        return NULL;
+        return napi_invalid_arg;
     }
+    str += _string(buf.get());
+#endif
 
-    String res(buf);
-    delete buf;
-    return res;
+    return napi_ok;
 }
 
 napi_value wrapper(napi_env env, napi_callback_info info)
@@ -266,9 +266,16 @@ napi_value wrapper(napi_env env, napi_callback_info info)
         napi_throw_error(env, "EINVAL", "Too few arguments");
         return NULL;
     }
-
+    
+    _string source;
+    _string target;
     Options options;
-    int idx = 2;
+    
+    int idx = 0;
+    if (extractString(env, argv[idx++], source) != napi_ok)
+        return NULL;
+    if (extractString(env, argv[idx++], target) != napi_ok)
+        return NULL;
     if (napi_get_value_double(env, argv[idx++], &options.insertion_cost) != napi_ok)
         return NULL;
     if (napi_get_value_double(env, argv[idx++], &options.deletion_cost) != napi_ok)
@@ -285,8 +292,6 @@ napi_value wrapper(napi_env env, napi_callback_info info)
         return NULL;
 
     napi_value returnValue;
-    String source = extractString(env, argv[0]);
-    String target = extractString(env, argv[1]);
 
     MinCostSubstringStruct res = levenshteinDistance(source, target, options);
 
