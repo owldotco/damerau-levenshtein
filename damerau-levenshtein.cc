@@ -63,13 +63,13 @@ struct MinCostSubstringStruct
 
 int _getMatchStart(
     const vector<vector<CoordinateMatrixEntry>> &distanceMatrix,
-    const size_t matchEnd,
-    const size_t sourceLength)
+    const int matchEnd,
+    const int sourceLength)
 {
-    size_t row = sourceLength;
-    size_t column = matchEnd;
-    size_t tmpRow;
-    size_t tmpColumn;
+    int row = sourceLength;
+    int column = matchEnd;
+    int tmpRow;
+    int tmpColumn;
 
     // match will be empty string
     if (matchEnd == 0)
@@ -100,11 +100,11 @@ MinCostSubstringStruct getMinCostSubstring(
     const _string &source,
     const _string &target)
 {
-    size_t sourceLength = source.length();
-    size_t targetLength = target.length();
+    int sourceLength = source.length();
+    int targetLength = target.length();
     double minDistance = sourceLength + targetLength;
     int matchEnd = targetLength;
-    for (size_t column = 0; column <= targetLength; column++)
+    for (int column = 0; column <= targetLength; column++)
     {
         if (minDistance > distanceMatrix[sourceLength][column].cost)
         {
@@ -124,21 +124,21 @@ MinCostSubstringStruct levenshteinDistance(
 {
     bool isUnrestrictedDamerau = options.damerau && !options.restricted;
     bool isRestrictedDamerau = options.damerau && options.restricted;
-    unordered_map<_char_type, size_t> lastRowMap(512);
+    unordered_map<_char_type, int> lastRowMap(512);
 
-    auto sourceLength = source.length();
-    auto targetLength = target.length();
+    int sourceLength = source.length();
+    int targetLength = target.length();
 
     vector<vector<CoordinateMatrixEntry>> distanceMatrix(
         sourceLength + 1,
         vector<CoordinateMatrixEntry>(targetLength + 1));
 
-    for (size_t row = 1; row <= sourceLength; row++)
+    for (int row = 1; row <= sourceLength; row++)
     {
         distanceMatrix[row][0] = CoordinateMatrixEntry({distanceMatrix[row - 1][0].cost + options.deletion_cost, Coordinates(), {row - 1, 0}});
     }
 
-    for (size_t column = 1; column <= targetLength; column++)
+    for (int column = 1; column <= targetLength; column++)
     {
         if (options.search)
         {
@@ -153,11 +153,11 @@ MinCostSubstringStruct levenshteinDistance(
         }
     }
 
-    for (size_t row = 1; row <= sourceLength; row++)
+    for (int row = 1; row <= sourceLength; row++)
     {
         int lastColMatch = -1;
 
-        for (size_t column = 1; column <= targetLength; column++)
+        for (int column = 1; column <= targetLength; column++)
         {
             double costToInsert = distanceMatrix[row][column - 1].cost + options.insertion_cost;
             double costToDelete = distanceMatrix[row - 1][column].cost + options.deletion_cost;
@@ -291,8 +291,6 @@ napi_value wrapper(napi_env env, napi_callback_info info)
         return NULL;
     if (napi_get_value_bool(env, argv[idx++], &options.damerau) != napi_ok)
         return NULL;
-
-    napi_value returnValue;
 
     MinCostSubstringStruct res = levenshteinDistance(source, target, options);
 
