@@ -1,5 +1,7 @@
 # Damerau-Levenshtein distance
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/haggholm/damerau-levenshtein.svg)](https://greenkeeper.io/)
+
 A direct port of the Levenshtein/Damerau-Levenshtein
 algorithm from [natural](https://github.com/NaturalNode/natural)
 to an N-API/C++ extension.
