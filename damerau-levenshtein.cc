@@ -57,6 +57,7 @@ struct CoordinateMatrixEntry
 struct MinCostSubstringStruct
 {
     double distance;
+    int32_t offset;
     _string substring;
 };
 
@@ -113,7 +114,7 @@ MinCostSubstringStruct getMinCostSubstring(
     }
 
     int matchStart = _getMatchStart(distanceMatrix, matchEnd, sourceLength);
-    return {minDistance, target.substr(matchStart, matchEnd - matchStart)};
+    return {minDistance, matchStart, target.substr(matchStart, matchEnd - matchStart)};
 }
 
 MinCostSubstringStruct levenshteinDistance(
@@ -223,7 +224,7 @@ MinCostSubstringStruct levenshteinDistance(
     }
 
     if (!options.search)
-        return MinCostSubstringStruct({distanceMatrix[sourceLength][targetLength].cost, source});
+        return MinCostSubstringStruct({distanceMatrix[sourceLength][targetLength].cost, 0, source});
 
     return getMinCostSubstring(distanceMatrix, source, target);
 }
@@ -298,11 +299,13 @@ napi_value wrapper(napi_env env, napi_callback_info info)
     napi_value resOb;
     napi_value resSubstring;
     napi_value resDistance;
+    napi_value resOffset;
 
     if (_napi_create_string(env, res.substring.c_str(), res.substring.length(), &resSubstring) != napi_ok)
         return NULL;
-
     if (napi_create_double(env, res.distance, &resDistance) != napi_ok)
+        return NULL;
+    if (napi_create_int32(env, res.offset, &resOffset) != napi_ok)
         return NULL;
 
     if (napi_create_object(env, &resOb) != napi_ok)
@@ -311,6 +314,8 @@ napi_value wrapper(napi_env env, napi_callback_info info)
     if (napi_set_named_property(env, resOb, "substring", resSubstring) != napi_ok)
         return NULL;
     if (napi_set_named_property(env, resOb, "distance", resDistance) != napi_ok)
+        return NULL;
+    if (napi_set_named_property(env, resOb, "offset", resOffset) != napi_ok)
         return NULL;
 
     return resOb;

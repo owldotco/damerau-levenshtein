@@ -74,6 +74,7 @@ function getMinCostSubstring(distanceMatrix, source, target) {
   return {
     substring: target.slice(matchStart, matchEnd),
     distance: minDistance,
+    offset: matchStart
   };
 }
 
