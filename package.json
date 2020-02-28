@@ -1,38 +1,51 @@
 {
   "name": "@haggholm/damerau-levenshtein",
   "version": "1.0.5",
-  "description": "An N-API/C++ port of the Damerau-Levenshtein implementation from natural",
-  "main": "damerau-levenshtein.native.js",
-  "browser": "damerau-levenshtein.natural.js",
-  "types": "damerau-levenshtein.d.ts",
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.com"
   },
-  "engines": {
-    "node": ">=12.15.0"
+  "description": "An N-API/C++ port of the Damerau-Levenshtein implementation from natural",
+  "main": "damerau-levenshtein.native.js",
+  "browser": "damerau-levenshtein.natural.js",
+  "scripts": {
+    "build": "node-gyp-build",
+    "clean": "trash build prebuilds",
+    "install": "node-gyp-build",
+    "lint": "eslint .",
+    "lint:fix": "eslint --fix .",
+    "prebuild": "prebuildify --napi",
+    "prepublishOnly": "run-s build prebuild verify",
+    "preversion": "run-s verify",
+    "test": "jest",
+    "verify": "run-p test lint"
   },
   "repository": {
     "type": "git",
     "url": "git@github.com:haggholm/damerau-levenshtein.git"
   },
+  "keywords": [
+    "Damerau-Levenshtein",
+    "Levenshtein",
+    "string distance"
+  ],
+  "license": "MIT",
   "homepage": "https://github.com/haggholm/damerau-levenshtein",
-  "scripts": {
-    "build": "node-gyp-build",
-    "clean": "trash build prebuilds",
-    "install": "node-gyp-build",
-    "prebuild": "prebuildify --napi",
-    "preversion": "run-s test",
-    "prepublishOnly": "run-s build prebuild test",
-    "test": "jest"
-  },
   "dependencies": {
     "node-gyp-build": "^4.2.0",
     "underscore": "^1.9.2"
   },
   "devDependencies": {
-    "@types/node": "^12",
+    "@types/eslint": "^6.1.8",
+    "@types/eslint-plugin-prettier": "^2.2.0",
+    "@types/node": "^12.12.6",
     "@types/prettier": "^1.19.0",
+    "@types/underscore": "^1.9.4",
+    "eslint": "^6.8.0",
+    "eslint-config-prettier": "^6.10.0",
+    "eslint-plugin-json": "^2.1.0",
+    "eslint-plugin-package-json": "^0.1.4",
+    "eslint-plugin-prettier": "^3.1.2",
     "jest": "^25.1.0",
     "jscheck": "^0.2.0",
     "node-addon-api": "^2.0.0",
@@ -41,11 +54,38 @@
     "prettier": "^1.19.1",
     "trash-cli": "^3.0.0"
   },
-  "keywords": [
-    "Damerau-Levenshtein",
-    "Levenshtein",
-    "string distance"
+  "engines": {
+    "node": ">=12.15.0"
+  },
+  "types": "damerau-levenshtein.d.ts",
+  "contributors": [
+    {
+      "name": "Petter Häggholm",
+      "email": "petter@petterhaggholm.net",
+      "web": "https://github.com/haggholm"
+    },
+    {
+      "name": "Petter Häggholm",
+      "email": "petter@owl.co"
+    },
+    {
+      "name": "Chris Umbel",
+      "email": "chris@chrisumbel.com",
+      "web": "http://www.chrisumbel.com"
+    },
+    {
+      "name": "Rob Ellis",
+      "email": "rob@silentrob.me"
+    },
+    {
+      "name": "Ken Koch",
+      "email": "kkoch986@gmail.com"
+    }
   ],
-  "author": "Petter Häggholm <petter@petterhaggholm.net>",
-  "license": "ISC"
+  "maintainers": [
+    {
+      "name": "Petter Häggholm",
+      "email": "petter@owl.co"
+    }
+  ]
 }
