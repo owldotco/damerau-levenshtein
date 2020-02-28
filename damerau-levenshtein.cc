@@ -13,11 +13,17 @@ using namespace std;
 #define MAX_STRING_BUF_BYTES (16 * 1024 * 1024)
 
 #define USE_UTF16 true
+
 #ifdef USE_UTF16
 typedef char16_t CharType;
+#define _napi_get_value_string napi_get_value_string_utf16
+#define _napi_create_string napi_create_string_utf16
 #else
 typedef char CharType;
+#define _napi_get_value_string napi_get_value_string_utf8
+#define _napi_create_string napi_create_string_utf8
 #endif
+
 typedef basic_string<CharType> String;
 
 struct Options
@@ -46,8 +52,8 @@ struct CoordinateMatrixEntry
 
 struct MinCostSubstringStruct
 {
-    String substring;
     double distance;
+    String substring;
 };
 
 int _getMatchStart(
@@ -103,7 +109,7 @@ MinCostSubstringStruct getMinCostSubstring(
     }
 
     int matchStart = _getMatchStart(distanceMatrix, matchEnd, sourceLength);
-    return {target.substr(matchStart, matchEnd), minDistance};
+    return {minDistance, target.substr(matchStart, matchEnd)};
 }
 
 inline Coordinates nullCoords()
@@ -111,7 +117,7 @@ inline Coordinates nullCoords()
     return {0, 0};
 }
 
-double levenshteinDistance(
+MinCostSubstringStruct levenshteinDistance(
     const String &source,
     const String &target,
     const Options &options)
@@ -218,38 +224,26 @@ double levenshteinDistance(
     }
 
     if (!options.search)
-    {
-        return distanceMatrix[sourceLength][targetLength].cost;
-    }
+        return MinCostSubstringStruct({distanceMatrix[sourceLength][targetLength].cost, source});
 
-    return getMinCostSubstring(distanceMatrix, source, target).distance;
+    return getMinCostSubstring(distanceMatrix, source, target);
 }
 
 String extractString(napi_env env, napi_value arg)
 {
-    size_t buf_len;
+    size_t strLenCodeUnits;
+    if (_napi_get_value_string(env, arg, NULL, MAX_STRING_BUF_BYTES, &strLenCodeUnits) != napi_ok)
+        return NULL;
 
-#ifdef USE_UTF16
-    size_t strLenBytes = napi_get_value_string_utf16(env, arg, NULL, MAX_STRING_BUF_BYTES, &buf_len);
-#else
-    size_t strLenBytes = napi_get_value_string_utf8(env, arg, NULL, MAX_STRING_BUF_BYTES, &buf_len);
-#endif
-
-    if (strLenBytes > MAX_STRING_BUF_BYTES)
+    size_t strLenBytes = strLenCodeUnits * 2;
+    if (strLenBytes > MAX_STRING_BUF_BYTES - 1)
     {
         napi_throw_error(env, "EINVAL", "String is too large");
         return NULL;
     }
 
     CharType *buf = new CharType[strLenBytes / sizeof(CharType)];
-    auto maxStrLen = strLenBytes / sizeof(CharType) - 1;
-
-#ifdef USE_UTF16
-    auto status = napi_get_value_string_utf16(env, arg, (CharType *)&buf, maxStrLen, &buf_len);
-#else
-    auto status = napi_get_value_string_utf8(env, arg, (CharType *)&buf, maxStrLen, &buf_len);
-#endif
-    if (status != napi_ok)
+    if (_napi_get_value_string(env, arg, buf, strLenBytes, &strLenCodeUnits) != napi_ok)
     {
         napi_throw_error(env, "EINVAL", "Expected string");
         delete buf;
@@ -267,7 +261,7 @@ napi_value wrapper(napi_env env, napi_callback_info info)
     size_t argc = 10;
     napi_get_cb_info(env, info, &argc, argv, NULL, NULL);
 
-    if (argc != 10)
+    if (argc != 9)
     {
         napi_throw_error(env, "EINVAL", "Too few arguments");
         return NULL;
@@ -294,11 +288,27 @@ napi_value wrapper(napi_env env, napi_callback_info info)
     String source = extractString(env, argv[0]);
     String target = extractString(env, argv[1]);
 
-    napi_status status = napi_create_double(env, levenshteinDistance(source, target, options),
-                                            &returnValue);
-    if (status != napi_ok)
+    MinCostSubstringStruct res = levenshteinDistance(source, target, options);
+
+    napi_value resOb;
+    napi_value resSubstring;
+    napi_value resDistance;
+
+    if (_napi_create_string(env, res.substring.c_str(), res.substring.length(), &resSubstring) != napi_ok)
         return NULL;
-    return returnValue;
+
+    if (napi_create_double(env, res.distance, &resDistance) != napi_ok)
+        return NULL;
+
+    if (napi_create_object(env, &resOb) != napi_ok)
+        return NULL;
+
+    if (napi_set_named_property(env, resOb, "substring", resSubstring) != napi_ok)
+        return NULL;
+    if (napi_set_named_property(env, resOb, "distance", resDistance) != napi_ok)
+        return NULL;
+
+    return resOb;
 }
 
 napi_value init_all(napi_env env, napi_value exports)

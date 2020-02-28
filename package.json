@@ -18,7 +18,7 @@
   "homepage": "https://github.com/haggholm/damerau-levenshtein",
   "scripts": {
     "build": "node-gyp-build",
-    "clean": "trash build/** prebuilds/**",
+    "clean": "trash build prebuilds",
     "install": "node-gyp-build",
     "prebuild": "prebuildify --napi",
     "preversion": "run-s test",

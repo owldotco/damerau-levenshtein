@@ -12,7 +12,7 @@ const defaultOpts = {
 
 function levenshteinWrapper(source, target, options) {
   const opts = Object.assign({}, defaultOpts, options || {});
-  return binding.levenshteinDistance(
+  const res = binding.levenshteinDistance(
     source,
     target,
     opts.insertion_cost,
@@ -23,6 +23,7 @@ function levenshteinWrapper(source, target, options) {
     opts.restricted,
     opts.damerau
   );
+  return opts.search ? res : res.distance;
 }
 
 function DamerauLevenshteinDistance(source, target, options) {
@@ -43,7 +44,4 @@ function LevenshteinDistance(source, target, options) {
   );
 }
 
-module.exports = {
-  LevenshteinDistance: LevenshteinDistance,
-  DamerauLevenshteinDistance: DamerauLevenshteinDistance,
-};
+module.exports = { LevenshteinDistance, DamerauLevenshteinDistance };
