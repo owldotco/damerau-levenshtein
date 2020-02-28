@@ -10,6 +10,8 @@
 
 using namespace std;
 
+#define MAX_STRING_BUF_BYTES (16 * 1024 * 1024)
+
 #define USE_UTF16 true
 #ifdef USE_UTF16
 typedef char16_t CharType;
@@ -20,10 +22,10 @@ typedef basic_string<CharType> String;
 
 struct Options
 {
-    float insertion_cost = 1;
-    float deletion_cost = 1;
-    float substitution_cost = 1;
-    float transposition_cost = 1;
+    double insertion_cost = 1;
+    double deletion_cost = 1;
+    double substitution_cost = 1;
+    double transposition_cost = 1;
     bool search = true;
     bool restricted = false;
     bool damerau = true;
@@ -37,7 +39,7 @@ struct Coordinates
 
 struct CoordinateMatrixEntry
 {
-    float cost = 0;
+    double cost = 0;
     Coordinates coordinates = Coordinates({0, 0});
     Coordinates parentCell = Coordinates({0, 0});
 };
@@ -45,7 +47,7 @@ struct CoordinateMatrixEntry
 struct MinCostSubstringStruct
 {
     String substring;
-    float distance;
+    double distance;
 };
 
 int _getMatchStart(
@@ -89,7 +91,7 @@ MinCostSubstringStruct getMinCostSubstring(
 {
     size_t sourceLength = source.length();
     size_t targetLength = target.length();
-    float minDistance = sourceLength + targetLength;
+    double minDistance = sourceLength + targetLength;
     int matchEnd = targetLength;
     for (size_t column = 0; column <= targetLength; column++)
     {
@@ -109,7 +111,7 @@ inline Coordinates nullCoords()
     return {0, 0};
 }
 
-float levenshteinDistance(
+double levenshteinDistance(
     const String &source,
     const String &target,
     const Options &options)
@@ -151,13 +153,13 @@ float levenshteinDistance(
 
         for (size_t column = 1; column <= targetLength; column++)
         {
-            float costToInsert = distanceMatrix[row][column - 1].cost + options.insertion_cost;
-            float costToDelete = distanceMatrix[row - 1][column].cost + options.deletion_cost;
+            double costToInsert = distanceMatrix[row][column - 1].cost + options.insertion_cost;
+            double costToDelete = distanceMatrix[row - 1][column].cost + options.deletion_cost;
 
             // TODO Unicode?
             CharType sourceElement = source[row - 1];
             CharType targetElement = target[column - 1];
-            float costToSubstitute = distanceMatrix[row - 1][column - 1].cost;
+            double costToSubstitute = distanceMatrix[row - 1][column - 1].cost;
             if (sourceElement != targetElement)
             {
                 costToSubstitute = costToSubstitute + options.substitution_cost;
@@ -180,9 +182,9 @@ float levenshteinDistance(
             if (canDamerau)
             {
                 int lastRowMatch = lastRowMap.at(targetElement);
-                float costBeforeTransposition =
+                double costBeforeTransposition =
                     distanceMatrix[lastRowMatch - 1][lastColMatch - 1].cost;
-                float costToTranspose = costBeforeTransposition + ((row - lastRowMatch - 1) * options.deletion_cost) + ((column - lastColMatch - 1) * options.insertion_cost) + options.transposition_cost;
+                double costToTranspose = costBeforeTransposition + ((row - lastRowMatch - 1) * options.deletion_cost) + ((column - lastColMatch - 1) * options.insertion_cost) + options.transposition_cost;
                 possibleParents.push_back({costToTranspose,
                                            {lastRowMatch - 1, lastColMatch - 1}});
             }
@@ -192,7 +194,7 @@ float levenshteinDistance(
 
             if (canDoRestrictedDamerau)
             {
-                float costBeforeTransposition = distanceMatrix[row - 2][column - 2].cost;
+                double costBeforeTransposition = distanceMatrix[row - 2][column - 2].cost;
                 possibleParents.push_back({costBeforeTransposition + options.transposition_cost,
                                            {row - 2, column - 2},
                                            nullCoords()});
@@ -223,45 +225,75 @@ float levenshteinDistance(
     return getMinCostSubstring(distanceMatrix, source, target).distance;
 }
 
-#define EXTRACT_STRING_BUF_LEN (1024 * 8)
-
 String extractString(napi_env env, napi_value arg)
 {
-    CharType buf[EXTRACT_STRING_BUF_LEN];
     size_t buf_len;
 
 #ifdef USE_UTF16
-    auto status = napi_get_value_string_utf16(env, arg, (CharType *)&buf, EXTRACT_STRING_BUF_LEN, &buf_len);
+    size_t strLenBytes = napi_get_value_string_utf16(env, arg, NULL, MAX_STRING_BUF_BYTES, &buf_len);
 #else
-    auto napi_get_value_string_utf8(env, arg, (CharType *)&buf, 1024, &buf_len);
+    size_t strLenBytes = napi_get_value_string_utf8(env, arg, NULL, MAX_STRING_BUF_BYTES, &buf_len);
+#endif
+
+    if (strLenBytes > MAX_STRING_BUF_BYTES)
+    {
+        napi_throw_error(env, "EINVAL", "String is too large");
+        return NULL;
+    }
+
+    CharType *buf = new CharType[strLenBytes / sizeof(CharType)];
+    auto maxStrLen = strLenBytes / sizeof(CharType) - 1;
+
+#ifdef USE_UTF16
+    auto status = napi_get_value_string_utf16(env, arg, (CharType *)&buf, maxStrLen, &buf_len);
+#else
+    auto status = napi_get_value_string_utf8(env, arg, (CharType *)&buf, maxStrLen, &buf_len);
 #endif
     if (status != napi_ok)
     {
         napi_throw_error(env, "EINVAL", "Expected string");
+        delete buf;
         return NULL;
     }
-    // TODO Compare buf_len/bufLen to see if we're overflowing
 
-    return String(buf);
+    String res(buf);
+    delete buf;
+    return res;
 }
 
 napi_value wrapper(napi_env env, napi_callback_info info)
 {
-    napi_value argv[3];
-    size_t argc = 3;
+    napi_value argv[10];
+    size_t argc = 10;
     napi_get_cb_info(env, info, &argc, argv, NULL, NULL);
 
-    if (argc < 2)
+    if (argc != 10)
     {
         napi_throw_error(env, "EINVAL", "Too few arguments");
         return NULL;
     }
 
     Options options;
+    int idx = 2;
+    if (napi_get_value_double(env, argv[idx++], &options.insertion_cost) != napi_ok)
+        return NULL;
+    if (napi_get_value_double(env, argv[idx++], &options.deletion_cost) != napi_ok)
+        return NULL;
+    if (napi_get_value_double(env, argv[idx++], &options.substitution_cost) != napi_ok)
+        return NULL;
+    if (napi_get_value_double(env, argv[idx++], &options.transposition_cost) != napi_ok)
+        return NULL;
+    if (napi_get_value_bool(env, argv[idx++], &options.search) != napi_ok)
+        return NULL;
+    if (napi_get_value_bool(env, argv[idx++], &options.restricted) != napi_ok)
+        return NULL;
+    if (napi_get_value_bool(env, argv[idx++], &options.damerau) != napi_ok)
+        return NULL;
 
     napi_value returnValue;
     String source = extractString(env, argv[0]);
     String target = extractString(env, argv[1]);
+
     napi_status status = napi_create_double(env, levenshteinDistance(source, target, options),
                                             &returnValue);
     if (status != napi_ok)
