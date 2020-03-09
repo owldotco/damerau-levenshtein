@@ -11,6 +11,7 @@
   "scripts": {
     "build": "node-gyp-build",
     "clean": "trash build prebuilds",
+    "download-prebuilds": "prebuildify-ci download",
     "install": "node-gyp-build",
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
