@@ -1,0 +1,41 @@
+build: false
+
+skip_branch_with_pr: true
+
+environment:
+  matrix:
+    - nodejs_version: 'Current'
+
+configuration: Release
+platform:
+  - x86
+  - x64
+
+install:
+  - SET PATH=C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin;%PATH%
+  - ps: Install-Product node $env:nodejs_version $env:platform
+  - npm install
+
+test_script:
+  - node --version
+  - npm --version
+  - npm test
+
+after_test:
+  - ps: If ($env:nodejs_version -eq "Current") { npm run prebuild }
+
+artifacts:
+  - path: prebuilds
+    name: $(APPVEYOR_REPO_TAG_NAME)-win-$(PLATFORM)
+    type: zip
+
+deploy:
+  - provider: GitHub
+    artifact: /.*\.zip/
+    draft: false
+    prerelease: true
+    auth_token:
+      secure: 'I5hGzHybkE3cWUcC+7EnDMl0vPim7sumzLVJhD7nVm5MlHPrqeNUpYo2reRqONKk+xlfhqVtH0aZAoYcoQgbLHR3yAxEiZwaDHvmnT5T+8jOw4/9URrXeIDkkDoV73TDcVbysrcIbfpKilajlTcnQhhJH40+4YBOYzgKkR2elGws2TmAAmeDvsadAm9Huv0WIuEvrMyvaHDXlG16KX9hhKxgarBum5aEHauPAMj4f5J+ldnFLuOAEGM7xqBqpJUQT4g++3mZpcl8yWyelfKVkV4Cs4EnkEgrqQDGs0QuVW3qzH7OpAuE0sWVccdwrXJLQKW/sVOHtvWFhVzLXRShLvcyxpozH0oyzk4779YiUslgsC4UK5MbWGiYqdwrslVUUcGkmEiKbvF39CQ5EelXkyzF9/qHFubtWWDcdykkA0qZEFejpY8uM2n4auC/v9eXtwDLLnJGFNTVE9ODS8CFWcUOWvsH1dGcz+IwTUnOIIptrMPSbgqbKZR+qyFETAYPdKK+K2129KGK/UfZCtmccXTcGhAVZXxSTmNvRSWFXSgPbZ7yGhAv3g6CeyRSl7qKSvdjlbXCLXcgDhOy0jSxUK//7kOArn5AuEd/knvs4Qw8DOq1xIt8ZZaYwiK9JSWWgTt6f0J5hDMPd8xAAUKxbmQACRsKduplx46Nx7BlIQY='
+    on:
+      appveyor_repo_tag: true
+      nodejs_version: 'Current'
