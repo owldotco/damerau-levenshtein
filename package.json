@@ -1,6 +1,6 @@
 {
   "name": "@haggholm/damerau-levenshtein",
-  "version": "1.0.12",
+  "version": "1.0.13",
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.com"
