@@ -16,7 +16,6 @@
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
     "prebuild": "prebuildify --napi",
-    "prepublishOnly": "run-s build prebuild verify",
     "preversion": "run-s verify",
     "test": "jest",
     "verify": "run-p test lint"
