@@ -30,14 +30,5 @@ deploy:
   on:
     tags: true
     node: 12.15.0
-before_install:
-  - >-
-    openssl aes-256-cbc
-    -K $encrypted_1460c58cc337_key
-    -iv $encrypted_1460c58cc337_iv
-    -in keyfile.enc
-    -out keyfile
-    -d
-  - chmod 600 keyfile
-  - eval $(ssh-agent -s)
-  - ssh-add keyfile
+  api_key:
+    secure: 'LB3VfTC/Oq0+VmnRuGpwpG4Gj3FJKpd8ch3KyPha0BTkDJ6xvBu7WOEb72uoPd6hat9hwTi/cOAc8gODkbmlRB0+DeQeTEVGXWj+aJCnq4m7CAQ9E1Cwlqf1XfYGF/xT0ZuHO6e3yoIxpH8efWlDRnbZFfRI/NTBit9ySx3Df6OghFi9ez2VQjd9sMMSchBjcmuVk9L85dx3rxd38KBXYZnZIDfpao290MSqeBT6tcxz5L4XFYBPWgd9x1nULxmJpbdYwqyjLVESwZs1M4q0+cIUzBPkuHKhmN0+1vZFeK4HLBBLH4238S7bxYkwxRxhmYJLZBsWBz6vZfrPV36+THqjsr/t0yuCMb6aa2Qhnboy9A9GaOcNeLz7n7g55+b7arWr0oUeyqMFDcJrAKn+QgALyrjcruq6xmwEEakITCGwmTs+luAgu76pEBilVjq0htaJlhzVVrXIFXyrcMrm12ZtszuoktsghUW62UmPSEwMvqT2xMsWGRQjWZGxzVNUrYHZ4hi9L3evEjr/LtBD2l6uyZpOJaKtJ6/+Svw+z98LPYyQPOHBxscuc+QrtJjVqaQkh9gBPsVMbCLGgyYPhQJMZqENFhkOHZ8TMK7QZDEcCpGFGPoJBkqiW5domr8G6Q372kBZ/R7XAAZU+OoKfXkdN1ASEYiNqsGesHkxVlk='
