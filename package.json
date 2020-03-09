@@ -22,7 +22,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git@github.com:haggholm/damerau-levenshtein.git"
+    "url": "git@github.com:owldotco/damerau-levenshtein.git"
   },
   "keywords": [
     "Damerau-Levenshtein",
@@ -30,7 +30,7 @@
     "string distance"
   ],
   "license": "MIT",
-  "homepage": "https://github.com/haggholm/damerau-levenshtein",
+  "homepage": "https://github.com/owldotco/damerau-levenshtein",
   "dependencies": {
     "node-gyp-build": "^4.2.1",
     "underscore": "^1.9.2"
