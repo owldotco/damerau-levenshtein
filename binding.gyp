@@ -2,7 +2,7 @@
   "targets": [
     {
       "target_name": "levenshtein",
-      "sources": ["damerau-levenshtein.cc"],
+      "sources": ["damerau-levenshtein-node.cc"],
       "conditions": [
         [
           "OS==\"mac\"",
