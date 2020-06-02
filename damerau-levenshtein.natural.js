@@ -70,7 +70,7 @@ function getMinCostSubstring(distanceMatrix, source, target) {
     }
   }
 
-  matchStart = _getMatchStart(distanceMatrix, matchEnd, sourceLength);
+  var matchStart = _getMatchStart(distanceMatrix, matchEnd, sourceLength);
   return {
     substring: target.slice(matchStart, matchEnd),
     distance: minDistance,
