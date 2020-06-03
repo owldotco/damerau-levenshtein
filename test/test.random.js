@@ -1,4 +1,3 @@
-const isCI = require('is-ci');
 const JSC = require('jscheck');
 const natural = require('../damerau-levenshtein.natural');
 const native = require('../damerau-levenshtein.native');
@@ -150,13 +149,9 @@ for (const options of opts) {
     });
 
     if (!wasm) {
-      if (isCI && process.platform === 'darwin') {
-        it.todo('should generate correct distances with wasm code');
-      } else {
-        it('should generate correct distances with wasm code', (done) => {
-          done.fail('wasm did not load');
-        });
-      }
+      it('should generate correct distances with wasm code', (done) => {
+        done.fail('wasm did not load');
+      });
       it.todo('should be faster than natural in wasm mode');
       return;
     }
