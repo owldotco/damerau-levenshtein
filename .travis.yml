@@ -26,7 +26,7 @@ before_install:
   - if [[ $TRAVIS_OS_NAME == osx && ! -d /usr/local/opt/binaryen/bin ]] ; then rmdir /usr/local/opt/binaryen; brew install binaryen ; fi
   - if [[ $TRAVIS_OS_NAME == osx && ! -d /usr/local/opt/icu4c/bin ]] ; then rmdir /usr/local/opt/icu4c; brew install icu4c ; fi
   - if [[ $TRAVIS_OS_NAME == osx && ! -d /usr/local/opt/openssl@1.1/bin ]] ; then rmdir /usr/local/opt/openssl@1.1; brew install openssl@1.1 ; fi
-  - if [[ $TRAVIS_OS_NAME == osx && ! -d /usr/local/opt/readline/bin ]] ; then rmdir /usr/local/opt/readline; brew install readline ; fi
+  - if [[ $TRAVIS_OS_NAME == osx && ! -d /usr/local/opt/readline/lib ]] ; then rmdir /usr/local/opt/readline; brew install readline ; fi
   - if [[ $TRAVIS_OS_NAME == osx && ! -d /usr/local/opt/sqlite/bin ]] ; then rmdir /usr/local/opt/sqlite; brew install sqlite ; fi
   - if [[ $TRAVIS_OS_NAME == osx && ! -d /usr/local/opt/xz/bin ]] ; then rmdir /usr/local/opt/xz; brew install xz ; fi
   - if [[ $TRAVIS_OS_NAME == osx && ! -d /usr/local/opt/python@3.8/bin ]] ; then rmdir /usr/local/opt/python@3.8; brew install python@3.8 ; fi
@@ -58,23 +58,21 @@ cache:
   directories:
     - $HOME/Library/Caches/Homebrew
     - /usr/local/Homebrew
-    - /usr/local/opt/binaryen
     - /usr/local/Cellar/binaryen
-    - /usr/local/opt/icu4c
+    - /usr/local/opt/binaryen
     - /usr/local/Cellar/icu4c
-    - /usr/local/opt/openssl@1.1
+    - /usr/local/opt/icu4c
     - /usr/local/Cellar/openssl@1.1
-    - /usr/local/opt/readline
+    - /usr/local/opt/openssl@1.1
     - /usr/local/Cellar/readline
-    - /usr/local/opt/sqlite
+    - /usr/local/opt/readline
     - /usr/local/Cellar/sqlite
-    - /usr/local/opt/xz
+    - /usr/local/opt/sqlite
     - /usr/local/Cellar/xz
-    - /usr/local/opt/python@3.8
+    - /usr/local/opt/xz
     - /usr/local/Cellar/python@3.8
-    - /usr/local/opt/yuicompressor
+    - /usr/local/opt/python@3.8
     - /usr/local/Cellar/yuicompressor
-    - /usr/local/opt/emscripten
-    - /usr/local/Cellar/emscripten
+    - /usr/local/opt/yuicompressor
     - /usr/local/Cellar/emscripten
     - /usr/local/opt/emscripten
