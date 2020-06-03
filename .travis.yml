@@ -23,6 +23,14 @@ os:
   - linux
 before_install:
   - if [[ $TRAVIS_OS_NAME == linux ]] ; then docker run -dit --name emscripten -v $(pwd):/src trzeci/emscripten-slim:sdk-tag-1.39.4-64bit bash ; fi
+  - if [[ $TRAVIS_OS_NAME == osx && ! -d /usr/local/opt/binaryen/bin ]] ; then rmdir /usr/local/opt/binaryen; brew install binaryen ; fi
+  - if [[ $TRAVIS_OS_NAME == osx && ! -d /usr/local/opt/icu4c/bin ]] ; then rmdir /usr/local/opt/icu4c; brew install icu4c ; fi
+  - if [[ $TRAVIS_OS_NAME == osx && ! -d /usr/local/opt/openssl@1.1/bin ]] ; then rmdir /usr/local/opt/openssl@1.1; brew install openssl@1.1 ; fi
+  - if [[ $TRAVIS_OS_NAME == osx && ! -d /usr/local/opt/readline/bin ]] ; then rmdir /usr/local/opt/readline; brew install readline ; fi
+  - if [[ $TRAVIS_OS_NAME == osx && ! -d /usr/local/opt/sqlite/bin ]] ; then rmdir /usr/local/opt/sqlite; brew install sqlite ; fi
+  - if [[ $TRAVIS_OS_NAME == osx && ! -d /usr/local/opt/xz/bin ]] ; then rmdir /usr/local/opt/xz; brew install xz ; fi
+  - if [[ $TRAVIS_OS_NAME == osx && ! -d /usr/local/opt/python@3.8/bin ]] ; then rmdir /usr/local/opt/python@3.8; brew install python@3.8 ; fi
+  - if [[ $TRAVIS_OS_NAME == osx && ! -d /usr/local/opt/yuicompressor/bin ]] ; then rmdir /usr/local/opt/yuicompressor; brew install yuicompressor ; fi
   - if [[ $TRAVIS_OS_NAME == osx && ! -d /usr/local/opt/emscripten/bin ]] ; then rmdir /usr/local/opt/emscripten; brew install emscripten ; fi
 before_script:
   - if [[ $TRAVIS_OS_NAME == linux ]] ; then docker exec -it emscripten npm run build:wasm ; fi
@@ -50,5 +58,23 @@ cache:
   directories:
     - $HOME/Library/Caches/Homebrew
     - /usr/local/Homebrew
+    - /usr/local/opt/binaryen
+    - /usr/local/Cellar/binaryen
+    - /usr/local/opt/icu4c
+    - /usr/local/Cellar/icu4c
+    - /usr/local/opt/openssl@1.1
+    - /usr/local/Cellar/openssl@1.1
+    - /usr/local/opt/readline
+    - /usr/local/Cellar/readline
+    - /usr/local/opt/sqlite
+    - /usr/local/Cellar/sqlite
+    - /usr/local/opt/xz
+    - /usr/local/Cellar/xz
+    - /usr/local/opt/python@3.8
+    - /usr/local/Cellar/python@3.8
+    - /usr/local/opt/yuicompressor
+    - /usr/local/Cellar/yuicompressor
+    - /usr/local/opt/emscripten
+    - /usr/local/Cellar/emscripten
     - /usr/local/Cellar/emscripten
     - /usr/local/opt/emscripten
