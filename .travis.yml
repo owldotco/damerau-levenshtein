@@ -18,7 +18,7 @@ os:
   - osx
   - linux
 before_install:
-  - if [[ $TRAVIS_OS_NAME == linux ]] ; then docker run -dit --name emscripten -v $(pwd):/src trzeci/emscripten-slim:sdk-incoming-64bit bash ; fi
+  - if [[ $TRAVIS_OS_NAME == linux ]] ; then docker run -dit --name emscripten -v $(pwd):/src trzeci/emscripten-slim:sdk-tag-1.39.4-64bit bash ; fi
 before_script:
   - if [[ $TRAVIS_OS_NAME == linux ]] ; then docker exec -it emscripten npm run build:wasm ; fi
 before_deploy:

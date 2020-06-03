@@ -25,6 +25,7 @@
  *   lengthBytesUTF8: typeof lengthBytesUTF8;
  *   lengthBytesUTF16: typeof lengthBytesUTF16;
  *   calledRun?: boolean;
+ *   asm: {[k: string]: Function};
  *   quit?(status: unknown, toThrow: Error): void;
  * } & EmscriptenModule} LevenshteinModule
  */
@@ -67,7 +68,7 @@ function getHelpers() {
   if (helpers) {
     return helpers;
   }
-  if (!binding.calledRun) {
+  if (!initializedSync()) {
     throw new Error(
       'damerau-levenshtein wasm binding has not finished loading'
     );
@@ -156,10 +157,14 @@ function LevenshteinDistance(source, target, options) {
   );
 }
 
+function initializedSync() {
+  return binding.calledRun || Object.keys(binding.asm).length > 0;
+}
+
 /** @type {Promise<true> | undefined} */
 let initializePromise;
 function initialized() {
-  if (binding.calledRun) {
+  if (initializedSync()) {
     return true;
   }
   if (initializePromise) {
