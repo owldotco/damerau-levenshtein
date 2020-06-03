@@ -51,7 +51,7 @@ const shortStrGenerator = JSC.string(5, 15, JSC.character(32, 1 << 24));
 
 const mismatches = [];
 
-beforeAll(() => wasm.initialized());
+beforeAll(() => wasm && wasm.initialized());
 
 afterAll(() => {
   let totalNativeFactors = 0;
