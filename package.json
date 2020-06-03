@@ -50,6 +50,7 @@
     "eslint-plugin-json": "^2.1.0",
     "eslint-plugin-package-json": "^0.1.4",
     "eslint-plugin-prettier": "^3.1.2",
+    "is-ci": "^2.0.0",
     "jest": "^25.1.0",
     "jscheck": "^0.2.0",
     "node-addon-api": "^2.0.0",

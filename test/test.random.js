@@ -1,7 +1,14 @@
+const isCI = require('is-ci');
 const JSC = require('jscheck');
 const natural = require('../damerau-levenshtein.natural');
 const native = require('../damerau-levenshtein.native');
-const wasm = require('../damerau-levenshtein.wasm');
+/** @type {typeof import('../damerau-levenshtein.wasm')} */
+let wasm;
+try {
+  wasm = require('../damerau-levenshtein.wasm');
+} catch (err) {
+  console.warn('Failed to load wasm:', err);
+}
 
 const opts = [];
 for (const insertion_cost of [0.5, 1]) {
@@ -59,12 +66,14 @@ afterAll(() => {
     '\n  Overall:',
     (totalNaturalTime / totalNapiTime).toFixed(1)
   );
-  console.log(
-    'Wasm speedup:\n  Mean:',
-    (totalWasmFactors / wasmSpeedupFactors.length).toFixed(1),
-    '\n  Overall:',
-    (totalNaturalTime / totalWasmTime).toFixed(1)
-  );
+  if (wasm) {
+    console.log(
+      'Wasm speedup:\n  Mean:',
+      (totalWasmFactors / wasmSpeedupFactors.length).toFixed(1),
+      '\n  Overall:',
+      (totalNaturalTime / totalWasmTime).toFixed(1)
+    );
+  }
 
   if (mismatches.length > 0) {
     console.error('Failing options:', mismatches);
@@ -139,6 +148,18 @@ for (const options of opts) {
       nativeSpeedupFactors.push(factor);
       expect(factor).toBeGreaterThan(2);
     });
+
+    if (!wasm) {
+      if (isCI && process.platform === 'darwin') {
+        it.todo('should generate correct distances with wasm code');
+      } else {
+        it('should generate correct distances with wasm code', (done) => {
+          done.fail('wasm did not load');
+        });
+      }
+      it.todo('should be faster than natural in wasm mode');
+      return;
+    }
 
     let wasmTime;
     it(
