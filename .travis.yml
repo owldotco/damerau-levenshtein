@@ -23,6 +23,7 @@ os:
   - linux
 before_install:
   - if [[ $TRAVIS_OS_NAME == linux ]] ; then docker run -dit --name emscripten -v $(pwd):/src trzeci/emscripten-slim:sdk-tag-1.39.4-64bit bash ; fi
+  - if [[ $TRAVIS_OS_NAME == osx && ! -d /usr/local/opt/emscripten/bin ]] ; then rmdir /usr/local/opt/emscripten; brew install emscripten ; fi
 before_script:
   - if [[ $TRAVIS_OS_NAME == linux ]] ; then docker exec -it emscripten npm run build:wasm ; fi
   - if [[ $TRAVIS_OS_NAME == osx ]] ; then emcc --version ; fi
@@ -44,3 +45,10 @@ deploy:
     node: 12.15.0
   api_key:
     secure: 'LB3VfTC/Oq0+VmnRuGpwpG4Gj3FJKpd8ch3KyPha0BTkDJ6xvBu7WOEb72uoPd6hat9hwTi/cOAc8gODkbmlRB0+DeQeTEVGXWj+aJCnq4m7CAQ9E1Cwlqf1XfYGF/xT0ZuHO6e3yoIxpH8efWlDRnbZFfRI/NTBit9ySx3Df6OghFi9ez2VQjd9sMMSchBjcmuVk9L85dx3rxd38KBXYZnZIDfpao290MSqeBT6tcxz5L4XFYBPWgd9x1nULxmJpbdYwqyjLVESwZs1M4q0+cIUzBPkuHKhmN0+1vZFeK4HLBBLH4238S7bxYkwxRxhmYJLZBsWBz6vZfrPV36+THqjsr/t0yuCMb6aa2Qhnboy9A9GaOcNeLz7n7g55+b7arWr0oUeyqMFDcJrAKn+QgALyrjcruq6xmwEEakITCGwmTs+luAgu76pEBilVjq0htaJlhzVVrXIFXyrcMrm12ZtszuoktsghUW62UmPSEwMvqT2xMsWGRQjWZGxzVNUrYHZ4hi9L3evEjr/LtBD2l6uyZpOJaKtJ6/+Svw+z98LPYyQPOHBxscuc+QrtJjVqaQkh9gBPsVMbCLGgyYPhQJMZqENFhkOHZ8TMK7QZDEcCpGFGPoJBkqiW5domr8G6Q372kBZ/R7XAAZU+OoKfXkdN1ASEYiNqsGesHkxVlk='
+# https://stackoverflow.com/questions/39930171/cache-brew-builds-with-travis-ci
+cache:
+  directories:
+    - $HOME/Library/Caches/Homebrew
+    - /usr/local/Homebrew
+    - /usr/local/Cellar/emscripten
+    - /usr/local/opt/emscripten
