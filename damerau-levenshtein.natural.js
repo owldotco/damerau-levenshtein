@@ -244,4 +244,5 @@ function levenshteinDistance(source, target, options) {
 module.exports = {
   LevenshteinDistance: LevenshteinDistance,
   DamerauLevenshteinDistance: DamerauLevenshteinDistance,
+  initialized: function() { return true; }
 };

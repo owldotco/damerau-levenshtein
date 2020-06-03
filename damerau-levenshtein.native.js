@@ -44,4 +44,10 @@ function LevenshteinDistance(source, target, options) {
   );
 }
 
-module.exports = { LevenshteinDistance, DamerauLevenshteinDistance };
+module.exports = {
+  LevenshteinDistance,
+  DamerauLevenshteinDistance,
+  initialized: function() {
+    return true;
+  },
+};

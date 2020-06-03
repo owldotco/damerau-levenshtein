@@ -46,3 +46,5 @@ export function DamerauLevenshteinDistance(
     target: string,
     options: DamerauLevenshteinDistanceOptions & { search: boolean }
 ): number | SubstringDistanceResult;
+
+export function initialized(): true | Promise<true>;
