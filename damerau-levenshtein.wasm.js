@@ -97,7 +97,7 @@ function getHelpers() {
 /**
  * @param source {Parameters<typeof import('./damerau-levenshtein').DamerauLevenshteinDistance>[0]}
  * @param target {Parameters<typeof import('./damerau-levenshtein').DamerauLevenshteinDistance>[1]}
- * @param options {Parameters<typeof import('./damerau-levenshtein').DamerauLevenshteinDistance>[2]}
+ * @param options {Parameters<typeof import('./damerau-levenshtein').DamerauLevenshteinDistance>[2]=}
  * @returns {ReturnType<typeof import('./damerau-levenshtein').DamerauLevenshteinDistance>}
  */
 function levenshteinWrapper(source, target, options) {
@@ -156,8 +156,8 @@ function LevenshteinDistance(source, target, options) {
   );
 }
 
+/** @type {Promise<true> | undefined} */
 let initializePromise;
-/** @returns {true | Promise<true>} */
 function initialized() {
   if (binding.calledRun) {
     return true;

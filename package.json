@@ -5,7 +5,7 @@
     "access": "public",
     "registry": "https://registry.npmjs.com"
   },
-  "description": "An N-API/C++ port of the Damerau-Levenshtein implementation from natural",
+  "description": "A C++ port of the Damerau-Levenshtein implementation from natural, with N-API or wasm bindings",
   "main": "damerau-levenshtein.native.js",
   "browser": "damerau-levenshtein.wasm.js",
   "scripts": {
@@ -72,6 +72,11 @@
     {
       "name": "Petter Häggholm",
       "email": "petter@owl.co"
+    },
+    {
+      "name": "Emily Marigold Klassen",
+      "email": "forivall@gmail.com",
+      "web": "https://github.com/forivall"
     },
     {
       "name": "Chris Umbel",
