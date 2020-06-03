@@ -11,7 +11,7 @@
   "scripts": {
     "build": "run-p build:*",
     "build:node": "node-gyp-build",
-    "build:wasm": "emcc -fno-exceptions -s EXPORTED_FUNCTIONS=\"['_malloc', '_free']\" -s \"EXTRA_EXPORTED_RUNTIME_METHODS=['_malloc','_free','stringToUTF16','UTF16ToString','lengthBytesUTF16']\" -Os damerau-levenshtein-wasm.cc -o dist/levenshtein.js",
+    "build:wasm": "emcc  -std=c++14 -fno-exceptions -s EXPORTED_FUNCTIONS=\"['_malloc', '_free']\" -s \"EXTRA_EXPORTED_RUNTIME_METHODS=['_malloc','_free','stringToUTF16','UTF16ToString','lengthBytesUTF16']\" -Os damerau-levenshtein-wasm.cc -o dist/levenshtein.js",
     "clean": "trash build prebuilds",
     "download-prebuilds": "prebuildify-ci download",
     "install": "node-gyp-build",
