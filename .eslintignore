@@ -2,3 +2,4 @@ node_modules
 build
 prebuilds
 damerau-levenshtein.natural.js
+dist

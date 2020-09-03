@@ -33,7 +33,7 @@
 // TODO: see if there's an emscripten build flag to disable the throw on uncaught/unhandled
 // monkey patch so the emscripten binding doesn't bind to process events.
 const processOn = process['on'];
-process['on'] = function() {
+process['on'] = function () {
   return this;
 };
 
@@ -42,7 +42,7 @@ const binding = require('./dist/levenshtein');
 
 process['on'] = processOn;
 
-binding.quit = function(status, toThrow) {
+binding.quit = function (status, toThrow) {
   process.emitWarning(toThrow);
 };
 
@@ -172,10 +172,10 @@ function initialized() {
   }
   // eslint-disable-next-line no-undef
   initializePromise = new Promise((resolve, reject) => {
-    binding.onRuntimeInitialized = function() {
+    binding.onRuntimeInitialized = function () {
       resolve(true);
     };
-    binding.onAbort = function(what) {
+    binding.onAbort = function (what) {
       reject(new Error(what));
     };
   });

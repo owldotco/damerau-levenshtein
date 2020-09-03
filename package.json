@@ -1,69 +1,18 @@
 {
   "name": "@haggholm/damerau-levenshtein",
   "version": "1.0.14",
-  "publishConfig": {
-    "access": "public",
-    "registry": "https://registry.npmjs.com"
-  },
   "description": "A C++ port of the Damerau-Levenshtein implementation from natural, with N-API or wasm bindings",
-  "main": "damerau-levenshtein.native.js",
-  "browser": "damerau-levenshtein.wasm.js",
-  "scripts": {
-    "build": "run-p build:*",
-    "build:node": "node-gyp-build",
-    "build:wasm": "emcc  -std=c++14 -fno-exceptions -s EXPORTED_FUNCTIONS=\"['_malloc', '_free']\" -s \"EXTRA_EXPORTED_RUNTIME_METHODS=['_malloc','_free','stringToUTF16','UTF16ToString','lengthBytesUTF16']\" -Os damerau-levenshtein-wasm.cc -o dist/levenshtein.js",
-    "clean": "trash build prebuilds",
-    "download-prebuilds": "prebuildify-ci download",
-    "install": "node-gyp-build",
-    "lint": "eslint .",
-    "lint:fix": "eslint --fix .",
-    "prebuild": "prebuildify --napi",
-    "prepack": "run-s build:wasm",
-    "preversion": "run-s verify",
-    "test": "jest",
-    "verify": "run-p test lint"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git@github.com:owldotco/damerau-levenshtein.git"
-  },
   "keywords": [
     "Damerau-Levenshtein",
     "Levenshtein",
     "string distance"
   ],
-  "license": "MIT",
   "homepage": "https://github.com/owldotco/damerau-levenshtein",
-  "dependencies": {
-    "node-gyp-build": "^4.2.1",
-    "underscore": "^1.9.2"
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:owldotco/damerau-levenshtein.git"
   },
-  "devDependencies": {
-    "@types/emscripten": "^1.39.4",
-    "@types/eslint": "^6.1.8",
-    "@types/eslint-plugin-prettier": "^2.2.0",
-    "@types/jest": "^25.1.0",
-    "@types/node": "^12.12.6",
-    "@types/prettier": "^1.19.0",
-    "@types/underscore": "^1.9.4",
-    "eslint": "^6.8.0",
-    "eslint-config-prettier": "^6.10.0",
-    "eslint-plugin-json": "^2.1.0",
-    "eslint-plugin-package-json": "^0.1.4",
-    "eslint-plugin-prettier": "^3.1.2",
-    "jest": "^25.1.0",
-    "jscheck": "^0.2.0",
-    "node-addon-api": "^2.0.0",
-    "npm-run-all": "^4.1.5",
-    "prebuildify": "^3.0.4",
-    "prebuildify-ci": "^1.0.5",
-    "prettier": "^1.19.1",
-    "trash-cli": "^3.0.0"
-  },
-  "engines": {
-    "node": ">=12.15.0"
-  },
-  "types": "damerau-levenshtein.d.ts",
+  "license": "MIT",
   "contributors": [
     {
       "name": "Petter Häggholm",
@@ -93,6 +42,57 @@
       "email": "kkoch986@gmail.com"
     }
   ],
+  "main": "damerau-levenshtein.native.js",
+  "browser": "damerau-levenshtein.wasm.js",
+  "types": "damerau-levenshtein.d.ts",
+  "scripts": {
+    "prebuild": "prebuildify --napi",
+    "build": "run-p build:*",
+    "build:node": "node-gyp-build",
+    "build:wasm": "emcc  -std=c++14 -fno-exceptions -s EXPORTED_FUNCTIONS=\"['_malloc', '_free']\" -s \"EXTRA_EXPORTED_RUNTIME_METHODS=['_malloc','_free','stringToUTF16','UTF16ToString','lengthBytesUTF16']\" -Os damerau-levenshtein-wasm.cc -o dist/levenshtein.js",
+    "clean": "trash build prebuilds",
+    "download-prebuilds": "prebuildify-ci download",
+    "install": "node-gyp-build",
+    "lint": "eslint .",
+    "lint:fix": "eslint --fix .",
+    "prepack": "run-s build:wasm",
+    "test": "jest --forceExit",
+    "verify": "run-p test lint",
+    "preversion": "run-s verify"
+  },
+  "dependencies": {
+    "node-gyp-build": "^4.2.3",
+    "underscore": "^1.11.0"
+  },
+  "devDependencies": {
+    "@types/emscripten": "^1.39.4",
+    "@types/eslint": "^7.2.2",
+    "@types/eslint-plugin-prettier": "^3.1.0",
+    "@types/jest": "^26.0.13",
+    "@types/node": "^12.12.6",
+    "@types/prettier": "^2.1.0",
+    "@types/underscore": "^1.10.22",
+    "eslint": "^7.8.1",
+    "eslint-config-prettier": "^6.11.0",
+    "eslint-plugin-json": "^2.1.2",
+    "eslint-plugin-package-json": "^0.1.4",
+    "eslint-plugin-prettier": "^3.1.4",
+    "jest": "^26.4.2",
+    "jscheck": "^0.2.0",
+    "node-addon-api": "^3.0.0",
+    "npm-run-all": "^4.1.5",
+    "prebuildify": "^4.0.0",
+    "prebuildify-ci": "^1.0.5",
+    "prettier": "^2.1.1",
+    "trash-cli": "^3.1.0"
+  },
+  "engines": {
+    "node": ">=12.15.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.com"
+  },
   "maintainers": [
     {
       "name": "Petter Häggholm",

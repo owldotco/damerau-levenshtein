@@ -74,7 +74,7 @@ function getMinCostSubstring(distanceMatrix, source, target) {
   return {
     substring: target.slice(matchStart, matchEnd),
     distance: minDistance,
-    offset: matchStart
+    offset: matchStart,
   };
 }
 
@@ -216,7 +216,7 @@ function levenshteinDistance(source, target, options) {
         });
       }
 
-      var minCostParent = _.min(possibleParents, function(p) {
+      var minCostParent = _.min(possibleParents, function (p) {
         return p.cost;
       });
 
@@ -244,5 +244,7 @@ function levenshteinDistance(source, target, options) {
 module.exports = {
   LevenshteinDistance: LevenshteinDistance,
   DamerauLevenshteinDistance: DamerauLevenshteinDistance,
-  initialized: function() { return true; }
+  initialized: function () {
+    return true;
+  },
 };

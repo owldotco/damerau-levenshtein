@@ -2,5 +2,12 @@
   "arrowParens": "always",
   "singleQuote": true,
   "trailingComma": "es5",
-  "useTabs": false
+  "useTabs": false,
+  "overrides": [
+    {
+      "options": { "parser": "json" },
+      "files": [".prettierrc", ".owlrc", ".stylelintrc"]
+    },
+    { "options": { "parser": "yaml" }, "files": [".editorconfig"] }
+  ]
 }

@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
-OS="`uname -s`"
+OS="$(uname -s)"
 
-if [[ "$OS" == "Linux" ]] ; then
+if [[ "$OS" == "Linux" ]]; then
   container_name=emscripten_damerau_levenshtein
 
   stop() {
@@ -27,6 +27,6 @@ if [[ "$OS" == "Linux" ]] ; then
     || die "Failed to build WASM"
   stop
 
-elif [[ "$OS" == "Darwin" ]] ; then
+elif [[ "$OS" == "Darwin" ]]; then
   echo 'TODO'
 fi
