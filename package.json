@@ -1,6 +1,6 @@
 {
   "name": "@haggholm/damerau-levenshtein",
-  "version": "1.0.14",
+  "version": "1.0.15",
   "description": "A C++ port of the Damerau-Levenshtein implementation from natural, with N-API or wasm bindings",
   "keywords": [
     "Damerau-Levenshtein",
